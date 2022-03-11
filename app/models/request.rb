@@ -10,10 +10,10 @@ class Request < ApplicationRecord
   validates :eviction_date, presence: true#, format: { with: /\A\d{0,4}-\d{0,2}-\d{0,2} \d{0,2}:\d{0,2}\z/i }
 
   def period
-    if (eviction_date - check_in_date)/86_400 < 1
+    if (eviction_date - check_in_date) / 86_400 < 1
       errors.add(:date, 'incorrect period')
     else
-      self.residence_time = ((eviction_date - check_in_date)/86_400).round.to_s
+      self.residence_time = ((eviction_date - check_in_date) / 86_400).round.to_s
     end
   end
 
