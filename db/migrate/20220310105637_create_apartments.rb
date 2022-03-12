@@ -8,5 +8,6 @@ class CreateApartments < ActiveRecord::Migration[6.1]
 
       t.timestamps
     end
+    add_index :apartments, [:room_number, :hotel_id], unique: true
   end
 end

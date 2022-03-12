@@ -1,4 +1,6 @@
 class Bill < ApplicationRecord
+  include ActiveSupport
+
   enum status: %i[pending paid canceled]
   belongs_to :client
 
@@ -7,7 +9,7 @@ class Bill < ApplicationRecord
 
   def self.final_price(request, apartments)
     client = request.client.id
-    final_price = (request.eviction_date - request.check_in_date)/86400 * apartments.price_cents
+    final_price = Duration.parse(request.residence_time).in_days.round(2) * apartments.price_cents
     Bill.create(client_id: client, final_price: final_price)
   end
 end

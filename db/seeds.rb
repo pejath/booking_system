@@ -7,14 +7,16 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 5.times do
-  Hotel.create(name: Faker::Company.name, rating: rand(1..5))
+  hotel = Hotel.create(name: Faker::Company.name, rating: rand(1..5))
+  hotel.image.attach(io: File.open("#{Rails.root}/app/assets/images/placeholder.png"), filename: 'placeholder')
   Administrator.create(name: Faker::Name.first_name, surname: Faker::Name.last_name, email: Faker::Internet.email)
   Client.create(name: Faker::Name.first_name, surname: Faker::Name.last_name, email: Faker::Internet.email,
                 birthdate: Faker::Date.birthday, phone_number: Faker::PhoneNumber.cell_phone_in_e164)
 end
 
 30.times do
-  Apartment.create(hotel_id: rand(1..5), apartment_class: rand(0..3), room_number: rand(1000), price: rand(10..1000))
+  apartment = Apartment.create(hotel_id: rand(1..5), apartment_class: rand(0..3), room_number: rand(1000), price: rand(10..1000))
+  3.times { apartment.images.attach(io: File.open("#{Rails.root}/app/assets/images/placeholder.png"), filename: 'placeholder') }
 end
 
 6.times do

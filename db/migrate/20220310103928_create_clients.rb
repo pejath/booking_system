@@ -1,13 +1,14 @@
 class CreateClients < ActiveRecord::Migration[6.1]
   def change
     create_table :clients do |t|
-      t.string :name, null: false
-      t.string :surname, null: false
-      t.string :email, null: false
-      t.date :birthdate, null: false
-      t.string :phone_number, null: false
+      t.string :name
+      t.string :surname
+      t.string :email, uniqueness: true, null: false
+      t.date :birthdate
+      t.string :phone_number
 
       t.timestamps
     end
+    add_index :clients, :email, unique: true
   end
 end
