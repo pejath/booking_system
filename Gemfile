@@ -30,6 +30,8 @@ gem 'bootsnap', '>= 1.4.4', require: false
 
 gem 'money-rails'
 
+gem "image_processing", ">= 1.2"
+
 gem 'iso8601', '~> 0.13.0'
 
 group :development, :test do

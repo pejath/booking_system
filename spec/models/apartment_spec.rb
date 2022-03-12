@@ -17,4 +17,9 @@ RSpec.describe Apartment, type: :model do
     it { is_expected.to validate_numericality_of(:price).is_greater_than(0) }
     it { is_expected.to validate_uniqueness_of(:room_number).scoped_to(:hotel_id) }
   end
+
+  describe '#images' do
+    subject { create(:apartment).images }
+    it { is_expected.to be_an_instance_of(ActiveStorage::Attached::Many) }
+  end
 end
