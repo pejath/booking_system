@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_03_12_143546) do
+ActiveRecord::Schema.define(version: 2022_03_14_122009) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -53,7 +53,7 @@ ActiveRecord::Schema.define(version: 2022_03_12_143546) do
     t.integer "hotel_id"
     t.integer "apartment_class", null: false
     t.integer "room_number", null: false
-    t.integer "price_cents", default: 0, null: false
+    t.integer "price_cents", limit: 8, default: 0, null: false
     t.string "price_currency", default: "USD", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -62,13 +62,15 @@ ActiveRecord::Schema.define(version: 2022_03_12_143546) do
   end
 
   create_table "bills", force: :cascade do |t|
-    t.integer "client_id"
+    t.integer "request_id"
+    t.integer "apartment_id"
     t.integer "final_price_cents", default: 0, null: false
     t.string "final_price_currency", default: "USD", null: false
     t.bigint "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["client_id"], name: "index_bills_on_client_id"
+    t.index ["apartment_id"], name: "index_bills_on_apartment_id"
+    t.index ["request_id"], name: "index_bills_on_request_id"
   end
 
   create_table "clients", force: :cascade do |t|
