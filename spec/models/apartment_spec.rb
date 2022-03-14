@@ -7,6 +7,7 @@ RSpec.describe Apartment, type: :model do
 
   describe 'relations' do
     it { is_expected.to belong_to(:hotel) }
+    it { is_expected.to have_many(:bills) }
   end
 
   describe 'validations' do

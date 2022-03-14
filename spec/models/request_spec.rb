@@ -10,6 +10,7 @@ RSpec.describe Request, type: :model do
 
   describe 'relations' do
     it { is_expected.to belong_to(:client) }
+    it { is_expected.to have_one(:bill) }
   end
 
   describe 'validations' do
@@ -19,6 +20,23 @@ RSpec.describe Request, type: :model do
     it { is_expected.to validate_numericality_of(:number_of_beds).is_greater_than(0) }
     it { is_expected.to allow_value('2000.01.18 12:00').for(:check_in_date) }
     it { is_expected.to allow_value('2000.01.19 12:00').for(:eviction_date) }
+  end
+
+  describe 'custom validations' do
+    it 'check_residence_time without check_in_date' do
+      request = build(:request, check_in_date: nil)
+      expect(request).to_not be_valid
+    end
+
+    it 'check_residence_time without eviction_date' do
+      request = build(:request, eviction_date: nil)
+      expect(request).to_not be_valid
+    end
+
+    it 'check_residence_time without check_in_date' do
+      request = build(:request, eviction_date: '2000.01.18 12:00', check_in_date: '2000.01.18 12:00')
+      expect(request).to_not be_valid
+    end
   end
 
   describe 'class_methods' do

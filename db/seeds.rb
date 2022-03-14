@@ -21,9 +21,9 @@ end
 
 6.times do
   Request.create(client: Client.all.sample, apartment_class: rand(0..3), number_of_beds: rand(1..8), check_in_date:
-    Faker::Date.between(from: 2.years.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now))
+    Faker::Date.between(from: 5.month.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now))
 end
 
 Request.all.each do |request|
-  Bill.final_price(request, Apartment.all.sample)
+  Bill.create(request: request, apartment: Apartment.all.sample)
 end

@@ -1,6 +1,7 @@
 class Apartment < ApplicationRecord
   enum apartment_class: %i[A B C Luxe]
   belongs_to :hotel
+  has_many :bills
   has_many_attached :images
 
   monetize :price_cents, as: 'price'

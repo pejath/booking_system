@@ -1,9 +1,10 @@
 FactoryBot.define do
 
   factory :bill do
-    association :client, factory: :client
+    association :request, factory: :request
+    association :apartment, factory: :apartment
 
-    final_price { rand(100..10000) }
+    final_price { rand(0..10000) }
   end
 
   factory :invalid_bill, class: Bill do

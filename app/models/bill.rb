@@ -1,16 +1,22 @@
 class Bill < ApplicationRecord
   include ActiveSupport
+  before_validation :custom_price
 
   enum status: %i[pending paid canceled]
-  belongs_to :client
+  belongs_to :request
+  belongs_to :apartment
 
   monetize :final_price_cents, as: 'final_price'
-  validates :final_price, numericality: { greater_than: 0 }
+  validates :final_price, presence: true, numericality: { greater_than: 0 }
 
-  def self.final_price(request, apartments)
-    client = request.client.id
-    final_price = Duration.parse(request.residence_time).in_days.round(2) * apartments.price_cents
-    Bill.create(client_id: client, final_price: final_price)
+  private
+
+  def custom_price
+    calculate_final_price if final_price <= 0
+  end
+
+  def calculate_final_price
+    self.final_price = Duration.parse(request.residence_time).in_days.round(2) * apartment.price_cents
   end
 end
 
