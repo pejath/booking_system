@@ -1,5 +1,5 @@
 class Request < ApplicationRecord
-  before_create :period
+  before_create :set_residence_time
 
   enum apartment_class: %i[A B C Luxe]
   enum status: %i[pending in_progress approved canceled]
@@ -20,7 +20,7 @@ class Request < ApplicationRecord
     errors.add(:residence_time, 'incorrect period')
   end
 
-  def period
+  def set_residence_time
     self.residence_time = ActiveSupport::Duration.build(eviction_date - check_in_date).iso8601
   end
 

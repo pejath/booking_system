@@ -1,7 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Bill, type: :model do
-  subject {create(:bill)}
+  subject { create(:bill) }
+
   describe 'enum' do
     it { should define_enum_for(:status).with_values(%i[pending paid canceled]) }
   end
@@ -16,7 +17,7 @@ RSpec.describe Bill, type: :model do
   end
 
   describe 'class_methods' do
-    describe '#final_price' do
+    describe '#calculate_final_price' do
       it 'creates Bill' do
         expect { Bill.create(request: create(:request), apartment: create(:apartment)) }.to change(Bill, :count).by(1)
         expect { Bill.create(request: create(:request), apartment: create(:apartment), final_price: 100) }.to change(Bill, :count).by(1)

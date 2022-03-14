@@ -1,6 +1,6 @@
 class Bill < ApplicationRecord
   include ActiveSupport
-  before_validation :custom_price
+  before_validation :calculate_final_price
 
   enum status: %i[pending paid canceled]
   belongs_to :request
@@ -11,12 +11,11 @@ class Bill < ApplicationRecord
 
   private
 
-  def custom_price
-    calculate_final_price if final_price <= 0
+  def calculate_final_price
+    if final_price <= 0
+      self.final_price = Duration.parse(request.residence_time).in_days.round(2) * apartment.price_cents
+    end
   end
 
-  def calculate_final_price
-    self.final_price = Duration.parse(request.residence_time).in_days.round(2) * apartment.price_cents
-  end
 end
 

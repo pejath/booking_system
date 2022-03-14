@@ -23,17 +23,7 @@ RSpec.describe Request, type: :model do
   end
 
   describe 'custom validations' do
-    it 'check_residence_time without check_in_date' do
-      request = build(:request, check_in_date: nil)
-      expect(request).to_not be_valid
-    end
-
-    it 'check_residence_time without eviction_date' do
-      request = build(:request, eviction_date: nil)
-      expect(request).to_not be_valid
-    end
-
-    it 'check_residence_time without check_in_date' do
+    it 'check_residence_time with invalid interval' do
       request = build(:request, eviction_date: '2000.01.18 12:00', check_in_date: '2000.01.18 12:00')
       expect(request).to_not be_valid
     end
