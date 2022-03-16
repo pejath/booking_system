@@ -7,6 +7,6 @@ FactoryBot.define do
   end
 
   factory :invalid_admin, class: Administrator do
-    name { nil }
+    email { nil }
   end
 end
