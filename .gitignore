@@ -8,7 +8,6 @@
 # Ignore bundler config.
 /.bundle
 /.idea
-/app/views
 /app/helpers
 /spec/helpers
 /spec/requests
