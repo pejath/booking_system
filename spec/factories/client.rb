@@ -9,7 +9,7 @@ FactoryBot.define do
   end
 
   factory :invalid_client, class: Client do
-    name { nil }
+    email { nil }
   end
 end
 

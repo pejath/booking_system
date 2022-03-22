@@ -11,6 +11,18 @@ class Request < ApplicationRecord
   validates :check_in_date, presence: true # , format: { with: /\A\d{0,4}-\d{0,2}-\d{0,2} \d{0,2}:\d{0,2}\z/i }
   validates :eviction_date, presence: true # , format: { with: /\A\d{0,4}-\d{0,2}-\d{0,2} \d{0,2}:\d{0,2}\z/i }
 
+  def apartment_class=(value)
+    super
+  rescue ArgumentError
+    @attributes.write_cast_value('apartment_class', value)
+  end
+
+  def status=(value)
+    super
+  rescue ArgumentError
+    @attributes.write_cast_value('status', value)
+  end
+
   private
 
   def check_residence_time
@@ -23,5 +35,6 @@ class Request < ApplicationRecord
   def set_residence_time
     self.residence_time = ActiveSupport::Duration.build(eviction_date - check_in_date).iso8601
   end
+
 
 end

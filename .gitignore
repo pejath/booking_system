@@ -8,6 +8,11 @@
 # Ignore bundler config.
 /.bundle
 /.idea
+/app/helpers
+/spec/helpers
+/spec/requests
+/spec/routing
+/spec/views
 
 # Ignore the default SQLite database.
 /db/*.sqlite3
