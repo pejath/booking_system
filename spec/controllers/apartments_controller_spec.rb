@@ -206,6 +206,7 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'does not change the apartments attributes' do
+        apartment.update!(apartment_class: 'C')
         apartments_price = apartment.price.fractional
         params[:apartment][:apartment_class] = 'A'
         params[:apartment][:price] = -10
@@ -217,7 +218,7 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'returns Not Found' do
-        params[:id]= -1
+        params[:id] = -1
         expect(http_request).to have_http_status(:not_found)
       end
 
