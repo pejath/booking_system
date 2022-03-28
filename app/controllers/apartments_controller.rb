@@ -64,13 +64,11 @@ class ApartmentsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
   def filter_params
-    # params.permit(filters: { apartment_class: nil, price_begin: nil, price_end: nil, hotel: nil })
     # params.require(:filters).permit(:apartment_class, :price_begin, :price_end, :hotel)
-    params.permit(:apartment_class, :price_begin, :price_end, :hotel, :lowest_price, :highest_price)
+    params.permit(:price_begin, :price_end, :hotel, :lowest_price, :highest_price, apartment_class: [])
   end
 
   def sort_params
-    # params.permit(sort: { lowest_price: nil, highest_price: nil })
     # params.require(:sort).permit(sort: { :lowest_price, :highest_price })
     params.permit(:lowest_price, :highest_price)
   end

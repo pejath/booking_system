@@ -22,7 +22,7 @@ RSpec.describe ApartmentsController, type: :controller do
     context 'with params' do
       # let(:params) { {apartment_class: nil, price_begin: nil, price_end: nil, hotel: nil, lowest_price: nil, highest_price: nil} }
       let(:params) { {} }
-      let!(:special_apartments) { create_list(:apartment, 10) }
+      let!(:apartments) { create_list(:apartment, 10) }
       let!(:special_apartment_1) { create(:apartment, price_cents: 10) }
       let!(:special_apartment_2) { create(:apartment, price_cents: 500) }
 
@@ -38,10 +38,16 @@ RSpec.describe ApartmentsController, type: :controller do
         expect(assigns(:apartments)).to eq Apartment.order(:price_cents).reverse_order
       end
 
-      it 'returns apartments filtered by apartment_class' do
-        params[:apartment_class] = 'A'
+      it 'returns apartments filtered by one apartment_class' do
+        params[:apartment_class] = ['A']
         http_request
-        expect(assigns(:apartments)).to eq Apartment.where(apartment_class: 'A')
+        expect(assigns(:apartments)).to eq Apartment.where(apartment_class: ['A'])
+      end
+
+      it 'returns apartments filtered by some apartment_class' do
+        params[:apartment_class] = ['A', 'B']
+        http_request
+        expect(assigns(:apartments)).to eq Apartment.where(apartment_class: ['A', 'B'])
       end
 
       it 'returns apartments filtered by minimal price' do
@@ -60,7 +66,7 @@ RSpec.describe ApartmentsController, type: :controller do
         params[:price_begin] = 100
         params[:price_end] = 600
         http_request
-        expect(assigns(:apartments)).to eq Apartment.where('price_cents>=? AND price_cents<=?', 10000, 60000)
+        expect(assigns(:apartments).to_a).to eq(Apartment.where('price_cents>=? AND price_cents<=?', 10000, 60000))
       end
 
       it 'returns apartments filtered by hotel' do

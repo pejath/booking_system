@@ -16,6 +16,7 @@ module ApartmentsHelper
 
       scope = case key.to_s
               when 'apartment_class'
+                puts value
                 scope.where(apartment_class: value)
               when 'price_begin'
                 scope.where('price_cents>=?', value.to_i * 100)
