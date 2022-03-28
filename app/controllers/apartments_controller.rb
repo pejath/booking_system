@@ -1,30 +1,32 @@
 class ApartmentsController < ApplicationController
-  before_action :set_hotel
+  include ApartmentsHelper
   before_action :set_apartment, only: %i[ show edit update destroy ]
 
-  # GET /hotel/:id/apartments or /hotel/:id/apartments.json
+  # GET /apartments or apartments.json
   def index
-    @apartments = @hotel.apartments
+    @apartments = filter_by_params(Apartment.all, filter_params)
+    # @apartments = sort_by_params(@apartments, sort_params)
+    # @apartments = @hotel.apartments
   end
 
-  # GET /hotel/:id/apartments/1 or /hotel/:id/apartments/1.json
+  # GET /apartments/1 or /apartments/1.json
   def show; end
 
-  # GET /hotel/:id/apartments/new
+  # GET /apartments/new
   def new
-    @apartment = @hotel.apartments.build
+    @apartment = Apartment.new
   end
 
-  # GET /hotel/:id/apartments/1/edit
+  # GET /apartments/1/edit
   def edit; end
 
-  # POST /hotel/:id/apartments or /hotel/:id/apartments.json
+  # POST /apartments or /apartments.json
   def create
-    @apartment = @hotel.apartments.build(apartment_params)
+    @apartment = Apartment.new(apartment_params)
 
     respond_to do |format|
       if @apartment.save
-        format.html { redirect_to hotel_apartment_url(@hotel, @apartment), notice: 'Apartment was successfully created.' }
+        format.html { redirect_to apartment_url(@apartment), notice: 'Apartment was successfully created.' }
         format.json { render :show, status: :created, location: @apartment }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -33,11 +35,11 @@ class ApartmentsController < ApplicationController
     end
   end
 
-  # PATCH/PUT /hotel/:id/apartments/1 or /hotel/:id/apartments/1.json
+  # PATCH/PUT /apartments/1 or /apartments/1.json
   def update
     respond_to do |format|
       if @apartment.update(apartment_params)
-        format.html { redirect_to hotel_apartment_url(@hotel, @apartment), notice: 'Apartment was successfully updated.' }
+        format.html { redirect_to apartment_url(@apartment), notice: 'Apartment was successfully updated.' }
         format.json { render :show, status: :ok, location: @apartment }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -46,28 +48,37 @@ class ApartmentsController < ApplicationController
     end
   end
 
-  # DELETE /hotel/:id/apartments/1 or /hotel/:id/apartments/1.json
+  # DELETE /apartments/1 or /apartments/1.json
   def destroy
 
     respond_to do |format|
       if @apartment.destroy
-        format.html { redirect_to hotel_apartments_url, notice: 'Apartment was successfully destroyed.' }
+        format.html { redirect_to apartments_url, notice: 'Apartment was successfully destroyed.' }
         format.json { head :no_content }
       else
-        format.html { redirect_to hotel_apartments_url, notice: 'Something go wrong.' }
+        format.html { redirect_to apartments_url, notice: 'Something go wrong.' }
       end
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
-
-  def set_hotel
-    @hotel = Hotel.find(params[:hotel_id])
+  def filter_params
+    # params.permit(filters: { apartment_class: nil, price_begin: nil, price_end: nil, hotel: nil })
+    # params.require(:filters).permit(:apartment_class, :price_begin, :price_end, :hotel)
+    params.permit(:apartment_class, :price_begin, :price_end, :hotel, :lowest_price, :highest_price)
   end
 
+  def sort_params
+    # params.permit(sort: { lowest_price: nil, highest_price: nil })
+    # params.require(:sort).permit(sort: { :lowest_price, :highest_price })
+    params.permit(:lowest_price, :highest_price)
+  end
+
+
+
   def set_apartment
-    @apartment = @hotel.apartments.find(params[:id])
+    @apartment = Apartment.find(params[:id])
   end
 
     # Only allow a list of trusted parameters through.
