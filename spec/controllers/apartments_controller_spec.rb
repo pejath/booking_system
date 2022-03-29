@@ -70,10 +70,10 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'returns apartments filtered by hotel' do
-        hotel_name = Apartment.all.sample.hotel.name
-        params[:hotel] = hotel_name
+        hotel_id = Apartment.all.sample.hotel_id
+        params[:hotel] = [hotel_id]
         http_request
-        expect(assigns(:apartments)).to eq Apartment.includes(:hotel).where(hotel: { name: hotel_name })
+        expect(assigns(:apartments).to_a).to eq Apartment.where(hotel: [hotel_id])
       end
     end
 

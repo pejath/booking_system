@@ -14,8 +14,6 @@ module RequestsHelper
               end
     end
 
-    scope.each { |val| puts val }
-
     scope
   end
 

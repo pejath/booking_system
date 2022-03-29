@@ -5,14 +5,45 @@ RSpec.describe RequestsController, type: :controller do
   let!(:client_request) { create(:request) }
 
   describe '#index' do
-    subject(:http_request) { get :index }
+    subject(:http_request) { get :index, params: params }
+    context 'with params' do
+      let(:params){ {} }
+      let(:requests) { create_list(:request, 100) }
 
-    it 'returns OK' do
-      expect(http_request).to have_http_status(:success)
+      it 'returns requests filtered by status' do
+        params[:status] = [1, 2]
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.where(status: [1, 2]))
+      end
+
+      it 'returns requests filtered by apartment_class' do
+        params[:apartment_class] = [1, 2]
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.where(apartment_class: [1, 2]))
+      end
+
+      it 'returns requests sorted by status' do
+        params[:sort_status] = nil
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.order(:status))
+      end
+
+      it 'returns requests sorted by apartment_class' do
+        params[:sort_apartment_class] = nil
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.order(:apartment_class))
+      end
     end
 
-    it 'renders the :index template' do
-      expect(http_request).to render_template :index
+    context 'without params' do
+      let(:params) { {} }
+      it 'returns OK' do
+        expect(http_request).to have_http_status(:success)
+      end
+
+      it 'renders the :index template' do
+        expect(http_request).to render_template :index
+      end
     end
   end
 
