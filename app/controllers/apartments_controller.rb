@@ -5,8 +5,7 @@ class ApartmentsController < ApplicationController
   # GET /apartments or apartments.json
   def index
     @apartments = filter_by_params(Apartment.all, filter_params)
-    # @apartments = sort_by_params(@apartments, sort_params)
-    # @apartments = @hotel.apartments
+    @apartments = sort_by_params(@apartments, sort_params)
   end
 
   # GET /apartments/1 or /apartments/1.json
@@ -65,15 +64,13 @@ class ApartmentsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
   def filter_params
     # params.require(:filters).permit(:apartment_class, :price_begin, :price_end, :hotel)
-    params.permit(:price_begin, :price_end, :hotel, :lowest_price, :highest_price, apartment_class: [])
+    params.permit(:price_begin, :price_end, hotel: [], apartment_class: [])
   end
 
   def sort_params
     # params.require(:sort).permit(sort: { :lowest_price, :highest_price })
     params.permit(:lowest_price, :highest_price)
   end
-
-
 
   def set_apartment
     @apartment = Apartment.find(params[:id])

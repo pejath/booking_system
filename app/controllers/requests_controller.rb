@@ -1,9 +1,12 @@
 class RequestsController < ApplicationController
+  include RequestsHelper
   before_action :set_request, only: %i[ show edit update destroy ]
 
   # GET /requests or /requests.json
   def index
-    @requests = Request.all
+    @requests = filter_by_params(Request.all, filter_params)
+    # @requests = sort_by_params(Request.all, sort_params)
+    @requests = sort_by_params(@requests, sort_params)
   end
 
   # GET /requests/1 or /requests/1.json
@@ -62,6 +65,14 @@ class RequestsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
   def set_request
     @request = Request.find(params[:id])
+  end
+
+  def filter_params
+    params.permit(apartment_class: [], status: [])
+  end
+
+  def sort_params
+    params.permit(:sort_apartment_class, :sort_status)
   end
 
     # Only allow a list of trusted parameters through.

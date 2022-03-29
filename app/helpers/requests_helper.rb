@@ -1,6 +1,5 @@
-module ApartmentsHelper
+module RequestsHelper
   def filter_by_params(scope, params)
-
     params.each do |key, value|
 
       next if value.nil?
@@ -8,16 +7,15 @@ module ApartmentsHelper
       scope = case key.to_s
               when 'apartment_class'
                 scope.where(apartment_class: value)
-              when 'price_begin'
-                scope.where('price_cents>=?', value.to_i * 100)
-              when 'price_end'
-                scope.where('price_cents<=?', value.to_i * 100)
-              when 'hotel'
-                scope.where(hotel_id: value)
+              when 'status'
+                scope.where(status: value)
               else
                 scope.all
               end
     end
+
+    scope.each { |val| puts val }
+
     scope
   end
 
@@ -25,10 +23,10 @@ module ApartmentsHelper
     params.each do |key, value|
 
       scope = case key.to_s
-              when 'lowest_price'
-                scope.order(:price_cents)
-              when 'highest_price'
-                scope.order(:price_cents).reverse_order
+              when 'sort_apartment_class'
+                scope.order(:apartment_class)
+              when 'sort_status'
+                scope.order(:status)
               else
                 scope.all
               end
