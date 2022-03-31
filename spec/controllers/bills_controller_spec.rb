@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe BillsController, type: :controller do
   let(:hotel) { create(:hotel) }
-  let(:request) { create(:request) }
+  let(:user_request) { create(:request) }
   let(:apartment) { create(:apartment, hotel: hotel) }
-  let!(:bill) { create(:bill, apartment: apartment, request: request) }
+  let!(:bill) { create(:bill, apartment: apartment, request: user_request) }
 
   describe '#show' do
     subject(:http_request) { get :show, params: params }
@@ -39,7 +39,7 @@ RSpec.describe BillsController, type: :controller do
     subject(:http_request) { post :create, params: params }
 
     context 'with valid attributes' do
-      let(:params) { {  bill: attributes_for(:bill, apartment_id: apartment, request_id: request) } }
+      let(:params) { {  bill: attributes_for(:bill, apartment_id: apartment, request_id: user_request) } }
 
       it 'returns Found' do
         expect(http_request).to have_http_status(:found)
