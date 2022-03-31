@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
+  resources :administrators, only: %i[new create destroy show edit update]
   resources :clients, only: %i[new create destroy show edit update]
   resources :bills, only: %i[show create]
-  resources :administrators, only: %i[new create destroy show edit update]
   resources :hotels
   resources :apartments
 

@@ -1,9 +1,7 @@
 module ApartmentsHelper
   def filter_by_params(scope, params)
-
     params.each do |key, value|
-
-      next if value.nil?
+      next if value.blank?
 
       scope = case key.to_s
               when 'apartment_class'
@@ -23,12 +21,13 @@ module ApartmentsHelper
 
   def sort_by_params(scope, params)
     params.each do |key, value|
+      next unless %w[desc asc].include?(value)
 
       scope = case key.to_s
-              when 'lowest_price'
-                scope.order(:price_cents)
-              when 'highest_price'
-                scope.order(:price_cents).reverse_order
+              when 'price'
+                scope.order("price_cents #{value}")
+              when 'apartment_class'
+                scope.order("apartment_class #{value}")
               else
                 scope.all
               end

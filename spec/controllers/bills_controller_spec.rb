@@ -4,7 +4,8 @@ RSpec.describe BillsController, type: :controller do
   let(:hotel) { create(:hotel) }
   let(:request) { create(:request) }
   let(:apartment) { create(:apartment, hotel: hotel) }
-  let!(:bill) { create(:bill, apartment: apartment, request: request)}
+  let!(:bill) { create(:bill, apartment: apartment, request: request) }
+
   describe '#show' do
     subject(:http_request) { get :show, params: params }
 
@@ -49,7 +50,7 @@ RSpec.describe BillsController, type: :controller do
       end
 
       it 'redirects to bill#show' do
-        expect(http_request).to redirect_to bill_url(id: assigns[:bill])
+        expect(http_request).to redirect_to bill_path(id: assigns[:bill])
       end
     end
 
@@ -60,7 +61,7 @@ RSpec.describe BillsController, type: :controller do
         expect(http_request).to have_http_status(:unprocessable_entity)
       end
 
-      it 'does not save the new apartment in the database' do
+      it 'does not save the new bill in the database' do
         expect { http_request }.to_not change(Bill, :count)
       end
 
@@ -69,5 +70,4 @@ RSpec.describe BillsController, type: :controller do
       end
     end
   end
-
 end

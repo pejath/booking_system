@@ -12,7 +12,8 @@ class Bill < ApplicationRecord
   private
 
   def calculate_final_price
-    if final_price <= 0 && !request.nil? && !apartment.nil?
+    return unless request && apartment
+    if final_price <= 0
       self.final_price = Duration.parse(request.residence_time).in_days.round(2) * apartment.price_cents
     end
   end

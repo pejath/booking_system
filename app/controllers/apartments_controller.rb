@@ -49,7 +49,6 @@ class ApartmentsController < ApplicationController
 
   # DELETE /apartments/1 or /apartments/1.json
   def destroy
-
     respond_to do |format|
       if @apartment.destroy
         format.html { redirect_to apartments_url, notice: 'Apartment was successfully destroyed.' }
@@ -63,13 +62,11 @@ class ApartmentsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
   def filter_params
-    # params.require(:filters).permit(:apartment_class, :price_begin, :price_end, :hotel)
-    params.permit(:price_begin, :price_end, hotel: [], apartment_class: [])
+    params.fetch(:filter, {}).permit(:price_begin, :price_end, hotel: [], apartment_class: [])
   end
 
   def sort_params
-    # params.require(:sort).permit(sort: { :lowest_price, :highest_price })
-    params.permit(:lowest_price, :highest_price)
+    params.fetch(:sort, {}).permit(:price, :apartment_class)
   end
 
   def set_apartment

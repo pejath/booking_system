@@ -7,31 +7,43 @@ RSpec.describe RequestsController, type: :controller do
   describe '#index' do
     subject(:http_request) { get :index, params: params }
     context 'with params' do
-      let(:params){ {} }
+      let(:params) { {sort:{}, filter:{}} }
       let(:requests) { create_list(:request, 100) }
 
       it 'returns requests filtered by status' do
-        params[:status] = [1, 2]
+        params[:filter][:status] = [1, 2]
         http_request
         expect(assigns[:requests].to_a).to eq(Request.where(status: [1, 2]))
       end
 
       it 'returns requests filtered by apartment_class' do
-        params[:apartment_class] = [1, 2]
+        params[:filter][:apartment_class] = [1, 2]
         http_request
         expect(assigns[:requests].to_a).to eq(Request.where(apartment_class: [1, 2]))
       end
 
       it 'returns requests sorted by status' do
-        params[:sort_status] = nil
+        params[:sort][:status] = 'asc'
         http_request
         expect(assigns[:requests].to_a).to eq(Request.order(:status))
       end
 
       it 'returns requests sorted by apartment_class' do
-        params[:sort_apartment_class] = nil
+        params[:sort][:apartment_class] = 'asc'
         http_request
         expect(assigns[:requests].to_a).to eq(Request.order(:apartment_class))
+      end
+
+      it 'returns requests sorted in reverse  by status' do
+        params[:sort][:status] = 'desc'
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.order('status DESC'))
+      end
+
+      it 'returns requests sorted in reverse by apartment_class' do
+        params[:sort][:apartment_class] = 'desc'
+        http_request
+        expect(assigns[:requests].to_a).to eq(Request.order('apartment_class DESC'))
       end
     end
 
