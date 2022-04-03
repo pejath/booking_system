@@ -7,6 +7,96 @@ RSpec.describe ApartmentsController, type: :controller do
   describe '#index' do
     subject(:http_request) { get :index, params: params }
 
+    context 'with params' do
+      describe 'filtered' do
+        let!(:expensive_luxe_class_apartments) { create(:apartment, price: 1000, apartment_class: :Luxe) }
+        let!(:cheap_c_class_request) { create(:apartment, price: 100, apartment_class: :C) }
+        let!(:average_b_class_request) { create(:apartment, price: 500, apartment_class: :B) }
+        let!(:second_average_b_class_request) { create(:apartment, price: 501, apartment_class: :B) }
+
+        describe 'by apartment class' do
+          let(:params) { { filter: { apartment_class: [2, 3] } } }
+
+          it 'returns apartments' do
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(include(cheap_c_class_request, expensive_luxe_class_apartments))
+            expect(assigns[:apartments].to_a).not_to(include(average_b_class_request, second_average_b_class_request))
+          end
+        end
+
+        describe 'by price' do
+          let(:params) { { filter: { price_begin: {} } } }
+
+          it 'returns apartments with minimal low price' do
+            params[:filter] = { price_begin: 101 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(include(expensive_luxe_class_apartments, average_b_class_request, second_average_b_class_request))
+            expect(assigns[:apartments].to_a).not_to(include(cheap_c_class_request))
+          end
+
+          it 'returns apartments with maximal price' do
+            params[:filter] = { price_end: 500 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(include(cheap_c_class_request, average_b_class_request))
+            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, second_average_b_class_request))
+          end
+
+          it 'returns apartments with maximal and maximal price' do
+            params[:filter] = { price_begin: 101, price_end: 500 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(include(average_b_class_request))
+            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, cheap_c_class_request, second_average_b_class_request))
+          end
+        end
+
+        describe 'by apartment_class and price' do
+          let(:params) { { filter: { apartment_class: [1], price_begin: 101, price_end: 1000 } } }
+
+          it 'returns apartments' do
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(include(average_b_class_request, second_average_b_class_request))
+            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, cheap_c_class_request))
+          end
+        end
+      end
+
+      describe 'sorted' do
+        let!(:some_apartments) { create_list(:apartment, 10) }
+
+        describe 'by price' do
+          let(:params) { { sort: {} } }
+
+          it 'returns sorted requests' do
+            params[:sort][:price] = 'asc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq(Apartment.order(:price_cents))
+          end
+
+          it 'returns reverse sorted requests' do
+            params[:sort][:price] = 'desc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq(Apartment.order('price_cents desc'))
+          end
+        end
+
+        describe 'by apartment_class' do
+          let(:params) { { sort: {} } }
+
+          it 'returns sorted requests' do
+            params[:sort][:apartment_class] = 'asc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq(Apartment.order(:apartment_class))
+          end
+
+          it 'returns reverse sorted requests' do
+            params[:sort][:apartment_class] = 'desc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq(Apartment.order('apartment_class desc'))
+          end
+        end
+      end
+    end
+
     context 'without params' do
       let(:params) { {} }
 
@@ -16,75 +106,6 @@ RSpec.describe ApartmentsController, type: :controller do
 
       it 'renders the :index template' do
         expect(http_request).to render_template :index
-      end
-    end
-
-    context 'with params' do
-      let(:params) { {sort:{}, filter:{}} }
-      let!(:apartments) { create_list(:apartment, 10) }
-      let!(:special_apartment_1) { create(:apartment, price_cents: 10) }
-      let!(:special_apartment_2) { create(:apartment, price_cents: 500) }
-
-      it 'returns apartments sorted from lowest to highest price' do
-        params[:sort][:price] = 'asc'
-        http_request
-        expect(assigns(:apartments).to_a).to eq Apartment.order(:price_cents)
-      end
-
-      it 'returns apartments sorted from highest to lowest price' do
-        params[:sort][:price] = 'desc'
-        http_request
-        expect(assigns(:apartments).to_a).to eq Apartment.order(:price_cents).reverse_order
-      end
-
-      it 'returns apartments sorted by apartment_class' do
-        params[:sort][:apartment_class] = 'asc'
-        http_request
-        expect(assigns(:apartments).to_a).to eq Apartment.order('apartment_class ASC')
-      end
-
-      it 'returns apartments sorted in reverse order by apartment_class' do
-        params[:sort][:apartment_class] = 'desc'
-        http_request
-        expect(assigns(:apartments).to_a).to eq Apartment.order('apartment_class DESC')
-      end
-
-      it 'returns apartments filtered by one apartment_class' do
-        params[:filter][:apartment_class] = ['A']
-        http_request
-        expect(assigns(:apartments)).to eq Apartment.where(apartment_class: ['A'])
-      end
-
-      it 'returns apartments filtered by some apartment_class' do
-        params[:filter][:apartment_class] = ['A', 'B']
-        http_request
-        expect(assigns(:apartments)).to eq Apartment.where(apartment_class: ['A', 'B'])
-      end
-
-      it 'returns apartments filtered by minimal price' do
-        params[:filter][:price_begin] = 300
-        http_request
-        expect(assigns(:apartments)).to eq Apartment.where('price_cents>=?', 30000)
-      end
-
-      it 'returns apartments filtered by maximal price' do
-        params[:filter][:price_end] = 300
-        http_request
-        expect(assigns(:apartments)).to eq Apartment.where('price_cents<=?', 30000)
-      end
-
-      it 'returns apartments filtered by minimal and maximal price' do
-        params[:filter][:price_begin] = 100
-        params[:filter][:price_end] = 600
-        http_request
-        expect(assigns(:apartments).to_a).to eq(Apartment.where('price_cents>=? AND price_cents<=?', 10000, 60000))
-      end
-
-      it 'returns apartments filtered by hotel' do
-        hotel_id = Apartment.all.sample.hotel_id
-        params[:filter][:hotel] = [hotel_id]
-        http_request
-        expect(assigns(:apartments).to_a).to eq Apartment.where(hotel: [hotel_id])
       end
     end
 

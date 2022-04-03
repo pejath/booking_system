@@ -13,7 +13,7 @@ module ApartmentsHelper
               when 'hotel'
                 scope.where(hotel_id: value)
               else
-                scope.all
+                scope
               end
     end
     scope
@@ -29,7 +29,7 @@ module ApartmentsHelper
               when 'apartment_class'
                 scope.order("apartment_class #{value}")
               else
-                scope.all
+                scope
               end
     end
     scope

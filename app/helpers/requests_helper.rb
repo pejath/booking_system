@@ -9,7 +9,7 @@ module RequestsHelper
               when 'status'
                 scope.where(status: value)
               else
-                scope.all
+                scope
               end
     end
     scope
