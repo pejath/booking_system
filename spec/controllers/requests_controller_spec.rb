@@ -2,64 +2,58 @@ require 'rails_helper'
 
 RSpec.describe RequestsController, type: :controller do
   let(:client) { create(:client)}
-  let!(:client_request) { create(:request) }
+  let!(:client_request) { create(:request, status: :pending, apartment_class: :B) }
 
   describe '#index' do
     subject(:http_request) { get :index, params: params }
+    let!(:request1) { create(:request, status: :in_progress, apartment_class: :Luxe) }
+    let!(:request2) { create(:request, status: :pending, apartment_class: :C) }
+    let!(:request3) { create(:request, status: :approved, apartment_class: :A) }
 
     context 'with params' do
       describe 'filtered' do
-        let!(:pending_luxe_class_request) { create(:request, status: :pending, apartment_class: :Luxe) }
-        let!(:in_progress_c_class_request) { create(:request, status: :in_progress, apartment_class: :C) }
-        let!(:approved_a_class_request) { create(:request, status: :approved, apartment_class: :A) }
-
         describe 'by status' do
           let(:params) { { filter: { status: [1, 2] } } }
 
           it 'returns filtered requests' do
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to(include(approved_a_class_request, in_progress_c_class_request))
-            expect(assigns[:requests].to_a).not_to(include(pending_luxe_class_request))
+            expect(assigns[:requests].to_a).to(match_array([request1, request3]))
           end
         end
 
         describe 'by apartment_class' do
-          let(:params) { { filter: { apartment_class: [0, 3] } } }
+          let(:params) { { filter: { apartment_class: [0, 1, 3] } } }
 
           it 'returns filtered requests' do
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to(include(approved_a_class_request, pending_luxe_class_request))
-            expect(assigns[:requests].to_a).not_to(include(in_progress_c_class_request))
+            expect(assigns[:requests].to_a).to(match_array([client_request, request1, request3]))
           end
         end
 
         describe 'by apartment_class and status' do
-          let(:params) { { filter: { apartment_class: [3], status: [0] } } }
+          let(:params) { { filter: { apartment_class: [3], status: [1] } } }
 
           it 'returns filtered requests' do
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to(include(pending_luxe_class_request))
-            expect(assigns[:requests].to_a).not_to(include(approved_a_class_request, in_progress_c_class_request))
+            expect(assigns[:requests].to_a).to(match_array([request1]))
           end
         end
       end
 
       describe 'sorted' do
-        let!(:some_requests) { create_list(:request, 10) }
-
         describe 'by status' do
           let(:params) { { sort: {} } }
 
           it 'returns sorted requests' do
-            params[:sort] = { status: 'asc' }
+            params[:sort][:status] = 'asc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to eq(Request.order(:status))
+            expect(assigns[:requests].to_a).to eq([client_request, request2, request1, request3])
           end
 
           it 'returns reverse sorted requests' do
-            params[:sort] = { status: 'desc' }
+            params[:sort][:status] = 'desc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to eq(Request.order('status desc'))
+            expect(assigns[:requests].to_a).to eq([request3, request1, client_request, request2 ])
           end
         end
 
@@ -69,14 +63,33 @@ RSpec.describe RequestsController, type: :controller do
           it 'returns sorted requests' do
             params[:sort][:apartment_class] = 'asc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to eq(Request.order(:apartment_class))
+            expect(assigns[:requests].to_a).to eq([request3, client_request, request2, request1])
           end
 
           it 'returns reverse sorted requests' do
             params[:sort][:apartment_class] = 'desc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:requests].to_a).to eq(Request.order('apartment_class desc'))
+            expect(assigns[:requests].to_a).to eq([request1, request2, client_request, request3])
           end
+        end
+      end
+
+      describe 'filter and sort combination' do
+        let(:params) { { sort: {}, filter: {} } }
+
+        it 'returns filtered and sorted requests' do
+          params[:sort][:apartment_class] = 'asc'
+          params[:filter][:status] = [0, 1]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:requests].to_a).to eq([client_request, request2, request1])
+        end
+
+        it 'returns filtered and sorted requests' do
+          params[:sort][:apartment_class] = 'desc'
+          params[:filter][:status] = [0, 1]
+          params[:filter][:apartment_class] = [1, 3]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:requests].to_a).to eq([request1, client_request])
         end
       end
     end

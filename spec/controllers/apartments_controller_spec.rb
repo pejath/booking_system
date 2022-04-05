@@ -2,25 +2,23 @@ require 'rails_helper'
 
 RSpec.describe ApartmentsController, type: :controller do
   let(:hotel) { create(:hotel) }
-  let!(:apartment) { create(:apartment, hotel: hotel) }
+  let!(:apartment) { create(:apartment, hotel: hotel, apartment_class: :Luxe, price: 1000) }
 
   describe '#index' do
     subject(:http_request) { get :index, params: params }
+    let!(:apartment1) { create(:apartment, apartment_class: :C, price: 100) }
+    let!(:apartment2) { create(:apartment, apartment_class: :B, price: 500) }
+    let!(:apartment3) { create(:apartment, apartment_class: :B, price: 501) }
 
     context 'with params' do
       describe 'filtered' do
-        let!(:expensive_luxe_class_apartments) { create(:apartment, price: 1000, apartment_class: :Luxe) }
-        let!(:cheap_c_class_request) { create(:apartment, price: 100, apartment_class: :C) }
-        let!(:average_b_class_request) { create(:apartment, price: 500, apartment_class: :B) }
-        let!(:second_average_b_class_request) { create(:apartment, price: 501, apartment_class: :B) }
 
-        describe 'by apartment class' do
+        context 'by apartment class' do
           let(:params) { { filter: { apartment_class: [2, 3] } } }
 
           it 'returns apartments' do
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to(include(cheap_c_class_request, expensive_luxe_class_apartments))
-            expect(assigns[:apartments].to_a).not_to(include(average_b_class_request, second_average_b_class_request))
+            expect(assigns[:apartments].to_a).to(match_array([apartment1, apartment]))
           end
         end
 
@@ -30,22 +28,19 @@ RSpec.describe ApartmentsController, type: :controller do
           it 'returns apartments with minimal low price' do
             params[:filter] = { price_begin: 101 }
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to(include(expensive_luxe_class_apartments, average_b_class_request, second_average_b_class_request))
-            expect(assigns[:apartments].to_a).not_to(include(cheap_c_class_request))
+            expect(assigns[:apartments].to_a).to(match_array([apartment, apartment2, apartment3]))
           end
 
           it 'returns apartments with maximal price' do
             params[:filter] = { price_end: 500 }
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to(include(cheap_c_class_request, average_b_class_request))
-            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, second_average_b_class_request))
+            expect(assigns[:apartments].to_a).to(match_array([apartment1, apartment2]))
           end
 
           it 'returns apartments with maximal and maximal price' do
             params[:filter] = { price_begin: 101, price_end: 500 }
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to(include(average_b_class_request))
-            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, cheap_c_class_request, second_average_b_class_request))
+            expect(assigns[:apartments].to_a).to(match_array([apartment2]))
           end
         end
 
@@ -54,45 +49,62 @@ RSpec.describe ApartmentsController, type: :controller do
 
           it 'returns apartments' do
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to(include(average_b_class_request, second_average_b_class_request))
-            expect(assigns[:apartments].to_a).not_to(include(expensive_luxe_class_apartments, cheap_c_class_request))
+            expect(assigns[:apartments].to_a).to(match_array([apartment2, apartment3]))
           end
         end
       end
 
       describe 'sorted' do
-        let!(:some_apartments) { create_list(:apartment, 10) }
-
         describe 'by price' do
           let(:params) { { sort: {} } }
 
-          it 'returns sorted requests' do
+          it 'returns sorted apartments' do
             params[:sort][:price] = 'asc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to eq(Apartment.order(:price_cents))
+            expect(assigns[:apartments].to_a).to eq([apartment1, apartment2, apartment3, apartment])
           end
 
-          it 'returns reverse sorted requests' do
+          it 'returns reverse sorted apartments' do
             params[:sort][:price] = 'desc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to eq(Apartment.order('price_cents desc'))
+            expect(assigns[:apartments].to_a).to eq([apartment, apartment3, apartment2, apartment1])
           end
         end
 
         describe 'by apartment_class' do
           let(:params) { { sort: {} } }
 
-          it 'returns sorted requests' do
+          it 'returns sorted apartments' do
             params[:sort][:apartment_class] = 'asc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to eq(Apartment.order(:apartment_class))
+            expect(assigns[:apartments].to_a).to eq([apartment2, apartment3, apartment1, apartment])
           end
 
-          it 'returns reverse sorted requests' do
+          it 'returns reverse sorted apartments' do
             params[:sort][:apartment_class] = 'desc'
             expect(http_request).to have_http_status(:success)
-            expect(assigns[:apartments].to_a).to eq(Apartment.order('apartment_class desc'))
+            expect(assigns[:apartments].to_a).to eq([apartment, apartment1, apartment2, apartment3])
           end
+        end
+      end
+
+      describe 'filter and sort combination' do
+        let(:params) { { sort: {}, filter: {} } }
+
+        it 'returns filtered and sorted apartments' do
+          params[:sort][:price] = 'asc'
+          params[:filter][:price_begin] = 101
+          params[:filter][:apartment_class] = [1]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:apartments].to_a).to eq([apartment2, apartment3])
+        end
+
+        it 'returns filtered and sorted apartments' do
+          params[:sort][:apartment_class] = 'desc'
+          params[:filter][:price_end] = 500
+          params[:filter][:apartment_class] = [1, 2]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:apartments].to_a).to eq([apartment1, apartment2])
         end
       end
     end

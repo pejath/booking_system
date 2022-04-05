@@ -16,6 +16,7 @@
 require "money-rails/test_helpers"
 require 'database_cleaner/active_record'
 require 'support/database_cleaner'
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
