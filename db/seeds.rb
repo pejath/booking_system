@@ -20,8 +20,18 @@ end
 end
 
 6.times do
+  #new Request
   Request.create(client: Client.all.sample, apartment_class: rand(0..3), number_of_beds: rand(1..8), check_in_date:
     Faker::Date.between(from: 5.month.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now))
+  #in progress Request
+  Request.create(client: Client.all.sample, apartment_class: rand(0..3), number_of_beds: rand(1..8), check_in_date:
+    Faker::Date.between(from: 5.month.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now), status: 1)
+  #approved Request
+  Request.create(client: Client.all.sample, apartment_class: rand(0..3), number_of_beds: rand(1..8), check_in_date:
+    Faker::Date.between(from: 5.month.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now), status: 2)
+  #canceled Request
+  Request.create(client: Client.all.sample, apartment_class: rand(0..3), number_of_beds: rand(1..8), check_in_date:
+    Faker::Date.between(from: 5.month.ago, to: Date.today-1), eviction_date: Faker::Date.between(from: Date.today, to: 5.month.from_now), status: 3)
 end
 
 Request.all.each do |request|

@@ -2,13 +2,115 @@ require 'rails_helper'
 
 RSpec.describe ApartmentsController, type: :controller do
   let(:hotel) { create(:hotel) }
-  let!(:apartment) { create(:apartment, hotel: hotel) }
+  let!(:apartment) { create(:apartment, hotel: hotel, apartment_class: :Luxe, price: 1000) }
 
   describe '#index' do
     subject(:http_request) { get :index, params: params }
+    let!(:apartment1) { create(:apartment, apartment_class: :C, price: 100) }
+    let!(:apartment2) { create(:apartment, apartment_class: :B, price: 500) }
+    let!(:apartment3) { create(:apartment, apartment_class: :B, price: 501) }
 
-    context 'with valid params' do
-      let(:params) { { hotel_id: hotel } }
+    context 'with params' do
+      describe 'filtered' do
+
+        context 'by apartment class' do
+          let(:params) { { filter: { apartment_class: [2, 3] } } }
+
+          it 'returns apartments' do
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(match_array([apartment1, apartment]))
+          end
+        end
+
+        describe 'by price' do
+          let(:params) { { filter: { price_begin: {} } } }
+
+          it 'returns apartments with minimal low price' do
+            params[:filter] = { price_begin: 101 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(match_array([apartment, apartment2, apartment3]))
+          end
+
+          it 'returns apartments with maximal price' do
+            params[:filter] = { price_end: 500 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(match_array([apartment1, apartment2]))
+          end
+
+          it 'returns apartments with maximal and maximal price' do
+            params[:filter] = { price_begin: 101, price_end: 500 }
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(match_array([apartment2]))
+          end
+        end
+
+        describe 'by apartment_class and price' do
+          let(:params) { { filter: { apartment_class: [1], price_begin: 101, price_end: 1000 } } }
+
+          it 'returns apartments' do
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to(match_array([apartment2, apartment3]))
+          end
+        end
+      end
+
+      describe 'sorted' do
+        describe 'by price' do
+          let(:params) { { sort: {} } }
+
+          it 'returns sorted apartments' do
+            params[:sort][:price] = 'asc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq([apartment1, apartment2, apartment3, apartment])
+          end
+
+          it 'returns reverse sorted apartments' do
+            params[:sort][:price] = 'desc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq([apartment, apartment3, apartment2, apartment1])
+          end
+        end
+
+        describe 'by apartment_class' do
+          let(:params) { { sort: {} } }
+
+          it 'returns sorted apartments' do
+            params[:sort][:apartment_class] = 'asc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq([apartment2, apartment3, apartment1, apartment])
+          end
+
+          it 'returns reverse sorted apartments' do
+            params[:sort][:apartment_class] = 'desc'
+            expect(http_request).to have_http_status(:success)
+            expect(assigns[:apartments].to_a).to eq([apartment, apartment1, apartment2, apartment3])
+          end
+        end
+      end
+
+      describe 'filter and sort combination' do
+        let(:params) { { sort: {}, filter: {} } }
+
+        it 'returns filtered and sorted apartments' do
+          params[:sort][:price] = 'asc'
+          params[:filter][:price_begin] = 101
+          params[:filter][:apartment_class] = [1]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:apartments].to_a).to eq([apartment2, apartment3])
+        end
+
+        it 'returns filtered and sorted apartments' do
+          params[:sort][:apartment_class] = 'desc'
+          params[:filter][:price_end] = 500
+          params[:filter][:apartment_class] = [1, 2]
+          expect(http_request).to have_http_status(:success)
+          expect(assigns[:apartments].to_a).to eq([apartment1, apartment2])
+        end
+      end
+    end
+
+    context 'without params' do
+      let(:params) { {} }
 
       it 'returns OK' do
         expect(http_request).to have_http_status(:success)
@@ -19,20 +121,13 @@ RSpec.describe ApartmentsController, type: :controller do
       end
     end
 
-    context 'with invalid hotel' do
-      let(:params) { { hotel_id: -1 } }
-
-      it 'returns Not Found' do
-        expect(http_request).to have_http_status(:not_found)
-      end
-    end
   end
 
   describe '#show' do
     subject(:http_request) { get :show, params: params }
 
     context 'with valid params' do
-      let(:params) { { id: apartment, hotel_id: hotel } }
+      let(:params) { { id: apartment } }
 
       it 'returns OK' do
         expect(http_request).to have_http_status(:success)
@@ -49,12 +144,7 @@ RSpec.describe ApartmentsController, type: :controller do
     end
 
     context 'with invalid params' do
-      let(:params) { { id: apartment, hotel_id: hotel } }
-
-      it 'returns Not Found' do
-        params[:hotel_id] = -1
-        expect(http_request).to have_http_status(:not_found)
-      end
+      let(:params) { { id: apartment } }
 
       it 'returns Not Found' do
         params[:id] = -1
@@ -67,7 +157,7 @@ RSpec.describe ApartmentsController, type: :controller do
     subject(:http_request) { get :new, params: params }
 
     context 'with valid params' do
-      let(:params) { { hotel_id: hotel } }
+      let(:params) { {} }
 
       it 'returns OK' do
         expect(http_request).to have_http_status(:success)
@@ -82,21 +172,13 @@ RSpec.describe ApartmentsController, type: :controller do
         expect(http_request).to render_template :new
       end
     end
-
-    context 'with invalid hotel_id' do
-      let(:params) { { hotel_id: -1 } }
-
-      it 'returns Not Found' do
-        expect(http_request).to have_http_status(:not_found)
-      end
-    end
   end
 
   describe '#edit' do
     subject(:http_request) { get :edit, params: params }
 
     context 'with valid params' do
-      let(:params) { { id: apartment, hotel_id: hotel } }
+      let(:params) { { id: apartment} }
 
       it 'returns OK' do
         expect(http_request).to have_http_status(:success)
@@ -113,7 +195,7 @@ RSpec.describe ApartmentsController, type: :controller do
     end
 
     context 'with invalid id' do
-      let(:params) { { id: -1, hotel_id: hotel } }
+      let(:params) { { id: -1 } }
 
       it 'returns Not Found' do
         expect(http_request).to have_http_status(:not_found)
@@ -125,7 +207,7 @@ RSpec.describe ApartmentsController, type: :controller do
     subject(:http_request) { post :create, params: params }
 
     context 'with valid attributes' do
-      let(:params) { { hotel_id: hotel, apartment: attributes_for(:apartment, hotel_id: hotel) } }
+      let(:params) { {  apartment: attributes_for(:apartment, hotel_id: hotel) } }
 
       it 'returns Found' do
         expect(http_request).to have_http_status(:found)
@@ -140,12 +222,12 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'redirects to apartments#show' do
-        expect(http_request).to redirect_to hotel_apartment_url(hotel_id: hotel, id: assigns[:apartment])
+        expect(http_request).to redirect_to apartment_url( id: assigns[:apartment])
       end
     end
 
     context 'with invalid attributes' do
-      let(:params) { { apartment: attributes_for(:invalid_apartment), hotel_id: hotel } }
+      let(:params) { { apartment: attributes_for(:invalid_apartment) } }
 
       it 'returns Unprocessable Entity' do
         expect(http_request).to have_http_status(:unprocessable_entity)
@@ -162,11 +244,6 @@ RSpec.describe ApartmentsController, type: :controller do
       it 're-renders the :new template' do
         expect(http_request).to render_template :new
       end
-
-      it 'returns Not Found' do
-        params[:hotel_id] = -1
-        expect(http_request).to have_http_status(:not_found)
-      end
     end
   end
 
@@ -175,7 +252,7 @@ RSpec.describe ApartmentsController, type: :controller do
 
     context 'with valid attributes' do
       let(:params) do
-        { id: apartment, hotel_id: hotel, apartment: attributes_for(:apartment, hotel_id: hotel) }
+        { id: apartment, apartment: attributes_for(:apartment, hotel_id: hotel) }
       end
 
       it "changes apartment's attributes" do
@@ -194,15 +271,13 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'redirects to the updated apartment' do
-        expect(http_request).to redirect_to hotel_apartment_url(hotel_id: hotel, id: assigns[:apartment])
+        expect(http_request).to redirect_to apartment_url( id: assigns[:apartment])
       end
     end
 
     context 'with invalid attributes' do
       let(:params) do
-        { id: apartment,
-          hotel_id: hotel,
-          apartment: attributes_for(:invalid_apartment) }
+        { id: apartment, apartment: attributes_for(:invalid_apartment) }
       end
 
       it 'does not change the apartments attributes' do
@@ -236,7 +311,7 @@ RSpec.describe ApartmentsController, type: :controller do
     subject(:http_request) { delete :destroy, params: params }
 
     context 'with valid params' do
-      let(:params) { { id: apartment, hotel_id: hotel } }
+      let(:params) { { id: apartment } }
 
       it 'returns Found' do
         expect(http_request).to have_http_status(:found)
@@ -251,12 +326,12 @@ RSpec.describe ApartmentsController, type: :controller do
       end
 
       it 'redirects to #index' do
-        expect(http_request).to redirect_to hotel_apartments_path
+        expect(http_request).to redirect_to apartments_path
       end
     end
 
     context 'with invalid id' do
-      let(:params) { { id: -1, hotel_id: hotel } }
+      let(:params) { { id: -1 } }
 
       it 'returns Not Found' do
         http_request

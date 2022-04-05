@@ -5,7 +5,7 @@ FactoryBot.define do
 
     apartment_class { %w[B C A Luxe].sample }
     room_number { rand(1..1000) }
-    price { rand(10..1000) }
+    price { rand(100..1000) }
   end
 
   factory :invalid_apartment, class: Apartment do
