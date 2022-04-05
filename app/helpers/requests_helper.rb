@@ -25,7 +25,7 @@ module RequestsHelper
               when 'status'
                 scope.order("status #{value}")
               else
-                scope.all
+                scope
               end
     end
     scope
