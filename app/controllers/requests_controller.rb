@@ -76,5 +76,6 @@ class RequestsController < ApplicationController
     # Only allow a list of trusted parameters through.
   def request_params
     params.require(:request).permit(:client_id, :apartment_class, :number_of_beds, :eviction_date, :check_in_date, :status)
+    params[:request][:status] = :pending if current_user.role != :admin
   end
 end

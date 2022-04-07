@@ -1,6 +1,7 @@
 class AdministratorsController < ApplicationController
   before_action :set_administrator, only: %i[ show edit update destroy ]
-
+  before_action :custom_authenticate
+  # before_action :authenticate_user!
   # GET /administrators or /administrators.json
   def index
     @administrators = Administrator.all
@@ -60,6 +61,13 @@ class AdministratorsController < ApplicationController
 
   private
     # Use callbacks to share common setup or constraints between actions.
+  def custom_authenticate
+    authenticate_user!
+    if current_user.role != 'Admin'
+      head :forbidden
+    end
+  end
+
   def set_administrator
     @administrator = Administrator.find(params[:id])
   end

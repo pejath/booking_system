@@ -1,7 +1,7 @@
 class CreateRequests < ActiveRecord::Migration[6.1]
   def change
     create_table :requests do |t|
-      t.belongs_to :client
+      t.belongs_to :user
       t.string :residence_time, null: false
       t.integer :apartment_class, null: false
       t.integer :number_of_beds, null: false

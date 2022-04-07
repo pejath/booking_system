@@ -1,7 +1,7 @@
 class ApartmentsController < ApplicationController
   include ApartmentsHelper
   before_action :set_apartment, only: %i[ show edit update destroy ]
-
+  before_action :custom_authenticate, only: %i[ new create edit update destroy ]
   # GET /apartments or apartments.json
   def index
     @apartments = filter_by_params(Apartment.all, filter_params)
@@ -61,6 +61,11 @@ class ApartmentsController < ApplicationController
 
   private
     # Use callbacks to share common setup or constraints between actions.
+  def custom_authenticate
+    authenticate_user!
+    head :forbidden if current_user.role != 'Admin'
+  end
+
   def filter_params
     params.fetch(:filter, {}).permit(:price_begin, :price_end, hotel: [], apartment_class: [])
   end

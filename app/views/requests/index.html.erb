@@ -12,6 +12,10 @@
   <tbody>
     <% @requests.each do |request| %>
       <tr>
+        <td><%= request.id %></td>
+        <td><%= request.residence_time %></td>
+        <td><%= request.apartment_class %></td>
+        <td><%= request.status %></td>
         <td><%= link_to 'Show', request %></td>
         <td><%= link_to 'Edit', edit_request_path(request) %></td>
         <td><%= link_to 'Destroy', request, method: :delete, data: { confirm: 'Are you sure?' } %></td>

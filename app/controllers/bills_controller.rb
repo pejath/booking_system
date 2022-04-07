@@ -1,6 +1,6 @@
 class BillsController < ApplicationController
   before_action :set_bill, only: [:show]
-
+  before_action :authenticate_user!, only: :create
   # GET /bill/1 or /bill/1.json
   def show; end
 

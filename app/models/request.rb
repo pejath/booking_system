@@ -3,7 +3,7 @@ class Request < ApplicationRecord
 
   enum apartment_class: %i[A B C Luxe]
   enum status: %i[pending in_progress approved canceled]
-  belongs_to :client
+  belongs_to :user
   has_one :bill
 
   validate :check_residence_time

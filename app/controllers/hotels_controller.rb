@@ -1,6 +1,6 @@
 class HotelsController < ApplicationController
   before_action :set_hotel, only: %i[ show edit update destroy ]
-
+  # before_action :custom_authenticate, only: %i[ new create destroy update destroy ]
   # GET /hotels or /hotels.json
   def index
     @hotels = Hotel.all
